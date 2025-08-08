@@ -7,7 +7,8 @@
     <title>Drag-Drop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <style>
@@ -65,38 +66,40 @@ $(document).ready(function() {
         }
     });
 
-    // Multi-row drag and drop
-    $(".row_position").sortable({
-        delay: 150,
-        helper: function(e, tr) {
-            var $selected = tr.hasClass("selected") ? $(".selected") : tr;
-            tr.data("multidrag", $selected);
-            var $helper = tr.clone();
-            $helper.children().each(function(index) {
-                $(this).width(tr.children().eq(index).width());
-            });
-            return $helper;
-        },
-        start: function(e, ui) {
-            var $selected = ui.item.hasClass("selected") ? $(".selected") : ui.item;
-            $selected.not(ui.item).hide();
-        },
-        stop: function(e, ui) {
-            var $selected = ui.item.data("multidrag");
-            if ($selected.length > 1) {
-                $selected.show();
-                $selected.insertAfter(ui.item);
-                ui.item.remove();
+    // Multi-row drag and drop using Sortable.js
+    var selectedRows = new Set();
+    document.querySelectorAll('#mytable tbody tr').forEach(function(row) {
+        row.addEventListener('click', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                row.classList.toggle('selected');
+                if (row.classList.contains('selected')) {
+                    selectedRows.add(row);
+                } else {
+                    selectedRows.delete(row);
+                }
             } else {
-                $selected.show();
+                document.querySelectorAll('#mytable tbody tr.selected').forEach(function(r) {
+                    r.classList.remove('selected');
+                    selectedRows.delete(r);
+                });
+                row.classList.add('selected');
+                selectedRows.add(row);
             }
-            var selectedData = [];
-            $(".row_position>tr").each(function() {
-                selectedData.push($(this).attr("id"));
+        });
+    });
+
+    new Sortable(document.querySelector('.row_position'), {
+        animation: 150,
+        multiDrag: true,
+        selectedClass: 'selected',
+        onEnd: function (evt) {
+            // After drag, update order in DB
+            var ids = Array.from(document.querySelectorAll('.row_position tr')).map(function(tr) {
+                return tr.id;
             });
-            updateOrder(selectedData);
+            updateOrder(ids);
         }
-    }).disableSelection();
+    });
 });
 
 function updateOrder(data){
