@@ -1,6 +1,5 @@
-<?php 
+<?php
 require_once 'config.php';
-
 
 if (isset($_POST['allData'])) {
     $allData = $_POST['allData'];
@@ -9,13 +8,11 @@ if (isset($_POST['allData'])) {
         $allData = explode(',', $allData);
     }
     $i = 1;
-    foreach($allData as $value){
+    foreach ($allData as $value) {
         $value = intval($value);
-        $sql = "UPDATE sorting_record SET display_order = $i WHERE id = $value";
-        $conn->query($sql);
+        $sql = "UPDATE sorting_record SET display_order = ? WHERE id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$i, $value]);
         $i++;
     }
 }
-
-
-?>
