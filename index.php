@@ -25,7 +25,7 @@
 <body>
 <?php require_once('config.php'); 
 $sql = "SELECT * FROM sorting_record order by display_order";
-$rows = $conn->query($sql);
+$rows = $pdo->query($sql);
 ?>
     <div class="container mt-5">
         <h3 class="text-center">Dynamics Drag and Drop table rows</h3>
@@ -38,7 +38,7 @@ $rows = $conn->query($sql);
                 </tr>
             </thead>
             <tbody class="row_position">
-                <?php while($row = $rows->fetch_assoc()) {?>
+                <?php while($row = $rows->fetch(PDO::FETCH_ASSOC)) {?>
                 <tr id="<?php echo $row['id']?>">
                     <td><?php echo $row['id'] ?></td>
                     <td><?php echo $row['name'] ?></td>
